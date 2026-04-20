@@ -1,71 +1,70 @@
-<?php
-require 'config.php';
-$msg = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = $mysqli->real_escape_string($_POST['email']);
-    $password = md5($_POST['password']); // simple hashing for demo
-    $res = $mysqli->query("SELECT * FROM users WHERE email='$email' AND password='$password'");
-    if ($res && $res->num_rows === 1) {
-        $_SESSION['user'] = $res->fetch_assoc();
-        header('Location: dashboard.php');
-        exit;
-    } else {
-        $msg = 'Invalid credentials';
-    }
-}
-?>
-<!doctype html>
+<?php include 'db.php'; ?>
+
+<!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SUNN - Login</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css">
+    <title>Clinic Patient Record System</title>
+    <style>
+        body { font-family: 'Times New Roman', Times, serif; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 10px; border: 1px solid #e67af6ff; text-align: left; }
+        th { background: #ac3ef1ff; color: white; }
+        input, select, textarea { width: 100%; padding: 8px; margin-bottom: 10px; }
+        button { background: #ac3ef1ff; color: white; padding: 10px 15px; border: none; cursor: pointer; }
+        button:hover { background: #ac3ef1ff; }
+    </style>
 </head>
-<body class="bg-theme-light">
+<body>
 
-<div class="container">
-    <div class="row justify-content-center align-items-center min-vh-100">
-        <div class="col-md-6 col-lg-4">
+<h2>Clinic Patient Record System</h2>
 
-            <div class="card shadow-sm p-4">
+<form action="add.php" method="POST">
+    <input type="text" name="full_name" placeholder="Full Name" required>
+    <input type="number" name="age" placeholder="Age" required>
+    <select name="gender" required>
+        <option value="">Select Gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+    </select>
+    <!-- Contact field with 11-digit validation -->
+    <input type="tel" name="contact" placeholder="Contact Number" 
+           pattern="[0-9]{11}" maxlength="11" required 
+           title="Contact number must be exactly 11 digits">
+    <textarea name="address" placeholder="Address" required></textarea>
+    <button type="submit">Add Patient</button>
+</form>
 
-                <!-- UNIVERSITY LOGO -->
-                <div class="text-center">
-                    <img src="assets/img/logo.png" style="width:130px; height:auto;" class="mb-3">
-                    <h4 class="fw-bold">STATE UNIVERSITY OF NORTHERN NEGROS</h4>
-                    <p class="text-muted small">Student Patient Record System</p>
-                </div>
+<table>
+    <tr>
+        <th>No.</th>
+        <th>Full Name</th>
+        <th>Age</th>
+        <th>Gender</th>
+        <th>Contact</th>
+        <th>Address</th>
+        <th>Date Registered</th>
+        <th>Action</th>
+    </tr>
 
-                <?php if($msg): ?>
-                    <div class="alert alert-danger mt-2"><?php echo $msg; ?></div>
-                <?php endif; ?>
-
-                <form method="post" class="mt-3">
-
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" name="email" class="form-control" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Password</label>
-                        <input type="password" name="password" class="form-control" required>
-                    </div>
-
-                    <button class="btn btn-primary w-100">Login</button>
-                </form>
-
-                <p class="text-center mt-3 small text-muted">
-                    Default: admin@example.com / admin123
-                </p>
-
-            </div>
-
-        </div>
-    </div>
-</div>
+    <?php
+    $result = $conn->query("SELECT * FROM patients ORDER BY id DESC");
+    while ($row = $result->fetch_assoc()) {
+        echo "<tr>
+            <td>".$row['id']."</td>
+            <td>".$row['full_name']."</td>
+            <td>".$row['age']."</td>
+            <td>".$row['gender']."</td>
+            <td>".$row['contact']."</td>
+            <td>".$row['address']."</td>
+            <td>".$row['date_registered']."</td>
+            <td>
+                <a href='edit.php?id=".$row['id']."'>Edit</a> |
+                <a href='delete.php?id=".$row['id']."' onclick='return confirm(\"Are you sure you want to delete this patient record?\")'>Delete</a>
+            </td>
+        </tr>";
+    }
+    ?>
+</table>
 
 </body>
 </html>
